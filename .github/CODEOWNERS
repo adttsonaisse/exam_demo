@@ -1,7 +1,7 @@
 # Placeholder: ganti dengan username GitHub asli.
 # Contoh: /exam_demo_app/ @budi-mobile
-/exam_demo_app/ @mobile-team
-/exam_demo_web/app/Http/Controllers/Api/ @backend-team @mobile-team
-/exam_demo_web/ @backend-team
-/.github/ @backend-team
-/docs/api-contract.md @backend-team @mobile-team
+/exam_demo_app/ @adttsonaisse
+/exam_demo_web/app/Http/Controllers/Api/ @adttsonaisse
+/exam_demo_web/ @adttsonaisse @mottaa
+/.github/ @adttsonaisse @mottaa
+/docs/api-contract.md @adttsonaisse @mottaa
