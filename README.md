@@ -27,16 +27,12 @@ flutter run
 
 ## Flow GitHub
 
-- Branch utama: `main` (protected, wajib PR + CI hijau).
+- Branch utama: `main` (protected, wajib PR).
 - Branch kerja pendek dari `main`:
   - `feat/app-*`, `fix/app-*` → Flutter siswa
   - `feat/web-*`, `fix/web-*` → dashboard guru/admin
   - `feat/api-*` → endpoint Laravel untuk Flutter
 - Commit: `feat(app): ...`, `feat(web): ...`, `feat(api): ...`, `fix(...)`, `chore(ci): ...`. Breaking API: `feat(api)!: ...`.
 - Merge: squash via PR, hapus branch.
-- CI path-filtered (`.github/workflows/`):
-  - ubah `exam_demo_app/**` → hanya `app.yml` jalan
-  - ubah `exam_demo_web/**` → hanya `web.yml` jalan
-  - ubah `routes/api.php` / `Controllers/Api/**` / `docs/api-contract.md` → `contract.yml` ingatkan cek breaking change
 - Tag independen: `app-v*` dan `web-v*`.
-- Branch protection (diatur di GitHub UI → Settings → Branches → `main`): require PR + status checks `web`/`app`, 1 approval, no force-push. Lihat `docs/branch-protection.md`.
+- Branch protection (diatur di GitHub UI → Settings → Branches → `main`): require PR, 1 approval, no force-push. Lihat `docs/branch-protection.md`.
