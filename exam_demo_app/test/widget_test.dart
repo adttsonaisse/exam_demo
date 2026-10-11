@@ -1,30 +1,155 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:exam_demo_app/main.dart';
+import 'package:exam_demo_app/models/exam_models.dart';
+import 'package:exam_demo_app/screens/locked_screen.dart';
+import 'package:exam_demo_app/services/exam_store.dart';
+import 'package:exam_demo_app/services/violation_service.dart';
+import 'package:exam_demo_app/theme/stripe_theme.dart';
+import 'package:exam_demo_app/widgets/stripe_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:exam_demo_app/main.dart';
+const _exam = ExamInfo(
+  id: 1,
+  mapel: 'Matematika',
+  durasiMenit: 90,
+  status: ExamStatus.belumMulai,
+  jumlahSoal: 5,
+);
+
+Widget _harness({
+  required ExamStore store,
+  required ViolationService violations,
+  required Widget home,
+}) {
+  return AppScope(
+    store: store,
+    violations: violations,
+    child: MaterialApp(theme: stripeTheme(), home: home),
+  );
+}
+
+class _CounterProbe extends StatelessWidget {
+  const _CounterProbe();
+
+  @override
+  Widget build(BuildContext context) {
+    final violations = AppScope.of(context).violations;
+    return Scaffold(
+      body: Center(
+        child: ListenableBuilder(
+          listenable: violations,
+          builder: (context, _) => ViolationCounter(
+            count: violations.count,
+            max: maxViolations,
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets(
+    'counter 0-1-2 tampil, pelanggaran ke-3 mengunci, token membuka',
+    (tester) async {
+      final store = ExamStore();
+      final violations = ViolationService();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      await tester.pumpWidget(
+        _harness(
+          store: store,
+          violations: violations,
+          home: const _CounterProbe(),
+        ),
+      );
+      // startExam memakai Future.delayed: majukan jam palsu agar selesai.
+      final mulai = store.startExam(_exam);
+      await tester.pump(const Duration(milliseconds: 600));
+      await mulai;
+      await tester.pump();
+      expect(find.text('Pelanggaran 0/3'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+      violations.recordHeavy(ViolationKind.appSwitch);
+      await tester.pump();
+      expect(find.text('Pelanggaran 1/3'), findsOneWidget);
+      expect(violations.isLocked, isFalse);
+
+      violations.recordHeavy(ViolationKind.statusBar);
+      await tester.pump();
+      expect(find.text('Pelanggaran 2/3'), findsOneWidget);
+      expect(violations.isLocked, isFalse);
+
+      violations.recordHeavy(ViolationKind.screenOff);
+      await tester.pump();
+      expect(violations.isLocked, isTrue);
+
+      final token = store.issueTeacherToken();
+      violations.issueTeacherToken(token, const Duration(minutes: 5));
+
+      await tester.pumpWidget(
+        _harness(
+          store: store,
+          violations: violations,
+          home: const LockedScreen(
+            exam: _exam,
+            alasan: 'Mematikan atau mengunci layar',
+          ),
+        ),
+      );
+      expect(find.text('Ujian Terkunci'), findsOneWidget);
+      expect(find.text('Pelanggaran 3/3'), findsNothing);
+
+      await tester.ensureVisible(find.byKey(const Key('tokenField')));
+      await tester.pump();
+      await tester.enterText(find.byKey(const Key('tokenField')), token);
+      await tester.tap(find.text('Buka dengan Token Guru'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(violations.isLocked, isFalse);
+      expect(find.text('Soal 1 dari 5'), findsOneWidget);
+    },
+  );
+
+  testWidgets('token salah menampilkan galat dan tetap terkunci', (
+    tester,
+  ) async {
+    final store = ExamStore();
+    final violations = ViolationService();
+
+    await tester.pumpWidget(
+      _harness(
+        store: store,
+        violations: violations,
+        home: const LockedScreen(exam: _exam, alasan: 'Uji kunci'),
+      ),
+    );
+    final mulai = store.startExam(_exam);
+    await tester.pump(const Duration(milliseconds: 600));
+    await mulai;
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    violations.recordHeavy(ViolationKind.appSwitch);
+    violations.recordHeavy(ViolationKind.statusBar);
+    violations.recordHeavy(ViolationKind.screenOff);
+    violations.issueTeacherToken('GURU-9999', const Duration(minutes: 5));
+
+    await tester.pumpWidget(
+      _harness(
+        store: store,
+        violations: violations,
+        home: const LockedScreen(exam: _exam, alasan: 'Uji kunci'),
+      ),
+    );
+
+    await tester.ensureVisible(find.byKey(const Key('tokenField')));
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('tokenField')), 'SALAH');
+    await tester.tap(find.text('Buka dengan Token Guru'));
+    await tester.pump();
+
+    expect(violations.isLocked, isTrue);
+    expect(find.textContaining('Token salah'), findsOneWidget);
   });
 }
