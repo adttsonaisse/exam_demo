@@ -1,0 +1,45 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# Monorepo meta
+.opencode/
+coverage/
+
+# ---- exam_demo_app (Flutter - app ujian siswa) ----
+exam_demo_app/build/
+exam_demo_app/.dart_tool/
+exam_demo_app/.flutter-plugins-dependencies
+exam_demo_app/.pub-cache/
+exam_demo_app/.pub/
+exam_demo_app/coverage/
+exam_demo_app/android/app/debug
+exam_demo_app/android/app/profile
+exam_demo_app/android/app/release
+exam_demo_app/*.iml
+exam_demo_app/.widget_preview/
+exam_demo_app/**/doc/api/
+
+# ---- exam_demo_web (Laravel - API + dashboard guru/admin) ----
+exam_demo_web/vendor/
+exam_demo_web/node_modules/
+exam_demo_web/public/build/
+exam_demo_web/public/hot
+exam_demo_web/public/storage
+exam_demo_web/storage/*.key
+exam_demo_web/storage/pail
+exam_demo_web/.phpunit.cache
+exam_demo_web/.phpunit.result.cache
+exam_demo_web/.env
+exam_demo_web/.env.backup
+exam_demo_web/.env.production
+exam_demo_web/auth.json
+exam_demo_web/Homestead.json
+exam_demo_web/Homestead.yaml
