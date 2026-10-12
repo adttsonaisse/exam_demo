@@ -36,3 +36,4 @@ cd exam_demo_app && flutter pub get && flutter analyze && flutter test
 - Branches: `feat/app-*`, `fix/app-*`, `feat/web-*`, `feat/api-*`. Commits: `feat(app|web|api): ...`, `fix(...)`, `chore(ci): ...`.
 - Tags are independent: `app-v*`, `web-v*`.
 - `CODEOWNERS` still has placeholder `@mobile-team`/`@backend-team` — replace with real usernames; `Api/**` and `docs/api-contract.md` require both teams.
+- When creating a feature, make sure to create a branch associated with that feature.
